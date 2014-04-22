@@ -1,6 +1,8 @@
 Revel GSSAPI authentication Filter
 ==================================
 
+This module implements kerberos/GSS-API (see `RFC4178 <http://tools.ietf.org/html/rfc4178>`_) Filter for Revel.
+
 Prerequisities
 --------------
 
