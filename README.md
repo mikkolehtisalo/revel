@@ -31,3 +31,5 @@ app.conf:
 # cachesession
 session.iplock=true
 ```
+
+The authenticated user can be found from Session["username"]. 
