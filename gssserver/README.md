@@ -29,7 +29,7 @@ init.go:
 
 ```go
 import (
-    "gssserver"
+    "github.com/mikkolehtisalo/revel/gssserver"
 )
     revel.Filters = []revel.Filter{
         gssserver.GSSServerFilter,     // GSSAPI authentication

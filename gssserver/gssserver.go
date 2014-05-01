@@ -30,7 +30,7 @@ gss_buffer_t getnobuffer() {
 import "C"
 
 import (
-    "github.com/robfig/revel"
+    "github.com/revel/revel"
     "unsafe"
     "fmt"
     "strings"

@@ -10,7 +10,7 @@ init.go:
 
 ```go
 import (
-    "cachesession"
+    "github.com/mikkolehtisalo/revel/cachesession"
 )
     revel.Filters = []revel.Filter{
         cachesession.CacheSessionFilter, // Use cache based session implementation.

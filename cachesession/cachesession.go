@@ -1,8 +1,8 @@
 package cachesession
 
 import (
-    "github.com/robfig/revel/cache"
-    "github.com/robfig/revel"
+    "github.com/revel/revel/cache"
+    "github.com/revel/revel"
     "time"
     "net/http"
     "fmt"
