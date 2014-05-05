@@ -2,7 +2,7 @@ package ldapuserdetails
 
 import (
     "github.com/revel/revel/cache"
-    "github.com/johnweldon/ldap"
+    "github.com/mikkolehtisalo/ldap"
     "github.com/revel/revel"
     "fmt"
     "strings"
@@ -110,7 +110,7 @@ func Build_user_details(entry *ldap.Entry) User_details {
     details := User_details{}
     details.username = entry.GetAttributeValue(ldap_user_uid_attr) 
     details.visiblename = entry.GetAttributeValue(ldap_user_cn_attr) 
-    //details.photo = []byte(entry.GetAttributeValue(ldap_user_photo_attr)) 
+    details.photo = entry.GetRawAttributeValue(ldap_user_photo_attr)
     details.groups = entry.GetAttributeValues(ldap_user_group_attr)
     details.roles = append(details.roles, fmt.Sprintf("u:%s", details.username))
     for _, elem := range details.groups {
