@@ -13,14 +13,16 @@ var (
     ldap_port   uint16   = 389
     ldap_user       string   = "*"
     ldap_passwd     string   = "*"
-    ldap_base     string   = "dc=*,dc=*"
+    ldap_user_base     string   = "dc=*,dc=*"
     ldap_user_filter     string   = "&(objectClass=*)"
     ldap_user_uid_attr string = "*"
     ldap_user_cn_attr string = "*"
     ldap_user_photo_attr string = "*"
     ldap_user_group_attr string = "*"
     ldap_group_filter string = "&(objectClass=*)"
-    ldap_group_attributes []string = []string{"dn", "cn"}
+    ldap_group_base string = "dc=*,dc=*"
+    ldap_group_cn_attr string = "*"
+    ldap_group_dn_attr string = "*"
 )
 
 // Struct for holding details about user
@@ -54,14 +56,16 @@ func init() {
         ldap_port = get_c_uint16("ldap.port")
         ldap_user = get_c_str("ldap.user")
         ldap_passwd = get_c_str("ldap.passwd")
-        ldap_base = get_c_str("ldap.base")
+        ldap_user_base = get_c_str("ldap.user_base")
         ldap_user_filter = get_c_str("ldap.user_filter")
         ldap_user_uid_attr = get_c_str("ldap.user_uid_attr")
         ldap_user_cn_attr = get_c_str("ldap.user_cn_attr")
         ldap_user_photo_attr = get_c_str("ldap.user_photo_attr")
         ldap_user_group_attr = get_c_str("ldap.user_group_attr")
         ldap_group_filter = get_c_str("ldap.group_filter")
-        ldap_group_attributes = strings.Split(get_c_str("ldap.group_attributes"),",")
+        ldap_group_base = get_c_str("ldap.group_base")
+        ldap_group_cn_attr = get_c_str("ldap.group_cn_attr")
+        ldap_group_dn_attr = get_c_str("ldap.group_dn_attr")
     })
 }
 
@@ -84,13 +88,13 @@ func Get_connection() *ldap.Conn {
 }
 
 // Performs basic query
-func QueryLdap(filter string, attributes []string) *ldap.SearchResult {
+func QueryLdap(base string, filter string, attributes []string) *ldap.SearchResult {
     revel.TRACE.Printf("Query_Ldap(): filter: %s attributes: %s", filter, attributes)
     l := Get_connection()
     defer l.Close()
 
     search := ldap.NewSearchRequest(
-            ldap_base,
+            base,
             ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
             filter,
             attributes,
@@ -123,7 +127,7 @@ func Build_user_details(entry *ldap.Entry) User_details {
 func Get_user_details(username string) User_details {
     revel.TRACE.Printf("Get_user_details(): %s", username)
 
-    sr := QueryLdap(strings.Replace(ldap_user_filter, "*", username, -1), []string{ldap_user_uid_attr, ldap_user_cn_attr, ldap_user_photo_attr, ldap_user_group_attr})
+    sr := QueryLdap(ldap_user_base, strings.Replace(ldap_user_filter, "*", username, -1), []string{ldap_user_uid_attr, ldap_user_cn_attr, ldap_user_photo_attr, ldap_user_group_attr})
     // We expect exactly one result. If that's not true, something is probably really really wrong!
     if len(sr.Entries) != 1 {
         panic(fmt.Errorf("ldap query for %s returned %s hits", username, len(sr.Entries)))
