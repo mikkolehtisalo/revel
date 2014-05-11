@@ -27,11 +27,11 @@ var (
 
 // Struct for holding details about user
 type User_details struct {
-    username string
-    visiblename string
-    photo []byte
-    groups []string
-    roles []string
+    Username string
+    Visiblename string
+    Photo []byte
+    Groups []string
+    Roles []string
 }
 
 func get_c_str(name string) string {
@@ -112,13 +112,13 @@ func QueryLdap(base string, filter string, attributes []string) *ldap.SearchResu
 // Build the struct from LDAP search result
 func Build_user_details(entry *ldap.Entry) User_details {
     details := User_details{}
-    details.username = entry.GetAttributeValue(ldap_user_uid_attr) 
-    details.visiblename = entry.GetAttributeValue(ldap_user_cn_attr) 
-    details.photo = entry.GetRawAttributeValue(ldap_user_photo_attr)
-    details.groups = entry.GetAttributeValues(ldap_user_group_attr)
-    details.roles = append(details.roles, fmt.Sprintf("u:%s", details.username))
-    for _, elem := range details.groups {
-        details.roles = append(details.roles, fmt.Sprintf("g:%s", elem))
+    details.Username = entry.GetAttributeValue(ldap_user_uid_attr) 
+    details.Visiblename = entry.GetAttributeValue(ldap_user_cn_attr) 
+    details.Photo = entry.GetRawAttributeValue(ldap_user_photo_attr)
+    details.Groups = entry.GetAttributeValues(ldap_user_group_attr)
+    details.Roles = append(details.Roles, fmt.Sprintf("u:%s", details.Username))
+    for _, elem := range details.Groups {
+        details.Roles = append(details.Roles, fmt.Sprintf("g:%s", elem))
     }
     return details
 }
