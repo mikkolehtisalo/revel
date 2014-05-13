@@ -4,6 +4,8 @@ import (
     "github.com/revel/revel/cache"
     "github.com/revel/revel"
     "time"
+    "reflect"
+    "github.com/mikkolehtisalo/revel/ldapuserdetails"
 )
 
 const (
@@ -69,7 +71,71 @@ func GetPermissions(principals []string, acl ACLEntry) map[string]bool {
 
     return permissions
 }
+
+type Filterable interface {
+    BuildACLReference() string
+    GetACLEntry(reference string) ACLEntry
+}
+
+func takeSliceArg(arg interface{}) (out []interface{}, ok bool) {
+    slice, success := takeArg(arg, reflect.Slice)
+    if !success {
+        ok = false
+          return
+    }
+    c := slice.Len()
+    out = make([]interface{}, c)
+    for i := 0; i < c; i++ {
+        out[i] = slice.Index(i).Interface()
+    }
+    return out, true
+}
+
+func takeArg(arg interface{}, kind reflect.Kind) (val reflect.Value, ok bool) {
+    val = reflect.ValueOf(arg)
+    if val.Kind() == kind {
+        ok = true
+    }
+    return
+}
+
+// Takes any interface{} and attempt to convert it to []Filterable
+func get_filterable (items interface{}) []Filterable {
+    slice := reflect.ValueOf(items)
+    if slice.Kind() != reflect.Slice {
+        // Panic?
+    }
+
+    co := slice.Len()
+    filterableslice := make([]Filterable, co)
+    for i := 0; i < co; i++ {
+           filterableslice[i] = slice.Index(i).Interface().(Filterable)
+    }
+
+    return filterableslice
+}
+
+func Filter(c map[string]interface {}, permission string, i interface{}) {
+    // Get the items
+    items := get_filterable(i)
+    revel.INFO.Printf("Items: %+v", items)
+
+    // Get roles for the user
+    dets := c["user_details"].(ldapuserdetails.User_details)
+    roles := dets.Roles
+    revel.INFO.Printf("Roles: %+v", roles)
+
+    // Get the ACL for item
+    for _, item := range items {
+        ref := item.BuildACLReference()
+        revel.INFO.Printf("Reference: %+v", ref)
+        acl := item.GetACLEntry(ref)
+        revel.INFO.Printf("ACL entry: %+v", acl)
+    }
+}
+
 /*
+
 
 c.Args["user_details"]
 () {
