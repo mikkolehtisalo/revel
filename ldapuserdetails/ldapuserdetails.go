@@ -6,6 +6,7 @@ import (
     "github.com/revel/revel"
     "fmt"
     "strings"
+    "regexp"
 )
 
 var (
@@ -23,6 +24,7 @@ var (
     ldap_group_base string = "dc=*,dc=*"
     ldap_group_cn_attr string = "*"
     ldap_group_dn_attr string = "*"
+    ldap_user_group_regexp = regexp.MustCompile("cn=([^,]+)")
 )
 
 // Struct for holding details about user
@@ -66,6 +68,7 @@ func init() {
         ldap_group_base = get_c_str("ldap.group_base")
         ldap_group_cn_attr = get_c_str("ldap.group_cn_attr")
         ldap_group_dn_attr = get_c_str("ldap.group_dn_attr")
+        ldap_user_group_regexp = regexp.MustCompile(get_c_str("ldap.group_regexp"))
     })
 }
 
@@ -118,7 +121,8 @@ func Build_user_details(entry *ldap.Entry) User_details {
     details.Groups = entry.GetAttributeValues(ldap_user_group_attr)
     details.Roles = append(details.Roles, fmt.Sprintf("u:%s", details.Username))
     for _, elem := range details.Groups {
-        details.Roles = append(details.Roles, fmt.Sprintf("g:%s", elem))
+        cleaned := ldap_user_group_regexp.FindStringSubmatch(elem)[1]
+        details.Roles = append(details.Roles, fmt.Sprintf("g:%s", cleaned))
     }
     return details
 }

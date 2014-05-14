@@ -6,6 +6,7 @@ import (
     "time"
     "reflect"
     "github.com/mikkolehtisalo/revel/ldapuserdetails"
+    . "github.com/mikkolehtisalo/revel/common"
 )
 
 const (
@@ -52,7 +53,7 @@ func SetEntry(a ACLEntry) {
 func GetEntry(reference string) ACLEntry {
     a := ACLEntry{}
     if err := cache.Get(ACL_ENTRY_ID + reference, &a); err != nil {
-        revel.ERROR.Println("Unable to get ACL entry %s", reference)
+        revel.TRACE.Println("Unable to get ACL entry %s", reference)
     }
     return a
 }
@@ -115,30 +116,37 @@ func get_filterable (items interface{}) []Filterable {
     return filterableslice
 }
 
-func Filter(c map[string]interface {}, permission string, i interface{}) {
+// Filters items based on user's roles. Returns those that match any of the listed permissions.
+func Filter(c map[string]interface {}, permissions []string, i interface{}) []Filterable {
+    revel.TRACE.Printf("Filter(): %s : %+v", permissions, i)
+    result := []Filterable{}
+
     // Get the items
     items := get_filterable(i)
-    revel.INFO.Printf("Items: %+v", items)
+    revel.TRACE.Printf("Items: %+v", items)
 
     // Get roles for the user
     dets := c["user_details"].(ldapuserdetails.User_details)
     roles := dets.Roles
-    revel.INFO.Printf("Roles: %+v", roles)
+    revel.TRACE.Printf("Roles: %+v", roles)
 
-    // Get the ACL for item
+    // Compare all items against all ACLs, add matches to result
     for _, item := range items {
         ref := item.BuildACLReference()
-        revel.INFO.Printf("Reference: %+v", ref)
-        acl := item.GetACLEntry(ref)
-        revel.INFO.Printf("ACL entry: %+v", acl)
+        aclentry := item.GetACLEntry(ref)
+        for _, acl := range aclentry.ACLs {
+            if StringInSlice(acl.Permission, permissions) && StringInSlice(acl.Principal, roles) {
+                result = append(result, item)
+            }
+        }
     }
+
+    revel.TRACE.Printf("Filter returning: %+v", result)
+    return result
 }
 
 /*
 
 
-c.Args["user_details"]
-() {
-    
-}
+
 */
