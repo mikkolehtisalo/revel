@@ -74,33 +74,12 @@ func GetPermissions(principals []string, acl ACLEntry) map[string]bool {
 }
 
 type Filterable interface {
+    SetMatched(permissions []string) interface{}
     BuildACLReference() string
-    GetACLEntry(reference string) ACLEntry
+    BuildACLEntry(reference string) ACLEntry
 }
 
-func takeSliceArg(arg interface{}) (out []interface{}, ok bool) {
-    slice, success := takeArg(arg, reflect.Slice)
-    if !success {
-        ok = false
-          return
-    }
-    c := slice.Len()
-    out = make([]interface{}, c)
-    for i := 0; i < c; i++ {
-        out[i] = slice.Index(i).Interface()
-    }
-    return out, true
-}
-
-func takeArg(arg interface{}, kind reflect.Kind) (val reflect.Value, ok bool) {
-    val = reflect.ValueOf(arg)
-    if val.Kind() == kind {
-        ok = true
-    }
-    return
-}
-
-// Takes any interface{} and attempt to convert it to []Filterable
+// Takes any interface{} and attempts to convert it to []Filterable
 func get_filterable (items interface{}) []Filterable {
     slice := reflect.ValueOf(items)
     if slice.Kind() != reflect.Slice {
@@ -114,6 +93,20 @@ func get_filterable (items interface{}) []Filterable {
     }
 
     return filterableslice
+}
+
+// Get ACL entry from cache. If not available, build new (and set in cache)
+func GetACLEntry(reference string, item Filterable) ACLEntry {
+    entry := GetEntry(reference)
+
+    if len(entry.ObjReference)==0 {
+        // Wasn't found from cache, build new!
+        entry = item.BuildACLEntry(reference)
+        // Save to cache
+        SetEntry(entry)
+    }
+
+    return entry;
 }
 
 // Filters items based on user's roles. Returns those that match any of the listed permissions.
@@ -133,11 +126,18 @@ func Filter(c map[string]interface {}, permissions []string, i interface{}) []Fi
     // Compare all items against all ACLs, add matches to result
     for _, item := range items {
         ref := item.BuildACLReference()
-        aclentry := item.GetACLEntry(ref)
+        //aclentry := item.GetACLEntry(ref)
+        aclentry := GetACLEntry(ref, item)
+        matched := []string{}
         for _, acl := range aclentry.ACLs {
             if StringInSlice(acl.Permission, permissions) && StringInSlice(acl.Principal, roles) {
-                result = append(result, item)
+                matched = append(matched, acl.Permission)
             }
+        }
+        if len(matched) > 0 {
+            // Set the matched, produces copy so get it back...
+            item2 := item.SetMatched(matched).(Filterable)
+            result = append(result, item2)
         }
     }
 

@@ -8,6 +8,10 @@ Introduction
 
 TBD.
 
+* User has Roles (basically...)
+* Objects have ACLs (permission + principal)
+* MatchedRoles
+
 Usage
 -----
 
