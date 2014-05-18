@@ -7,4 +7,4 @@ A collection of useful revel modules:
 * GSSAPI/Kerberos authentication
 * User LDAP attributes loader
 * ACL system for models
-* HTML Filtering (deXSS)
+* deXSS - HTML Stripping

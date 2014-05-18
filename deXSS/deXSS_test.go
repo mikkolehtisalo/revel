@@ -18,11 +18,7 @@ func init() {
     allowed["a"] = "class,id,href,rel"
     allowed["img"] = "class,id,src,alt,hspace,vspace,width,height"
     allowed["span"] = "class,id,style"
-    allowed["html"] = ""
-    allowed["head"] = ""
-    allowed["body"] = ""
 }
-
 
 // strip_html
 

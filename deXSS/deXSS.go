@@ -74,6 +74,18 @@ func filter_attributes(n *html.Node, allowed map[string]string) {
 // If stip is set, removes the head/body/html tags that html.Parse always ensures in results.
 func FilterHTML(h string, allowed map[string]string, strip bool) string {
     revel.TRACE.Printf("FilterHTML() %+v, %+v", h, allowed)
+
+    // Make sure allowed contains html/head/body, since the go.net/html always adds them to the parsed document tree!
+    if _, present := allowed["html"]; !present {
+        allowed["html"] = ""
+    }
+    if _, present := allowed["head"]; !present {
+        allowed["head"] = ""
+    }
+    if _, present := allowed["body"]; !present {
+        allowed["body"] = ""
+    }
+
     meh := bytes.NewBufferString(h)
     doc, err := html.Parse(meh)
     if err != nil {
