@@ -3,6 +3,7 @@ package common
 import (
     "strings"
     "fmt"
+    "regexp"
     //"github.com/revel/revel"
 )
 
@@ -31,3 +32,8 @@ func AddUserToACLList(user string, acl *string) {
     }
 }
 
+// Checks whether inputs string looks like UUID
+func IsUUID(input string) bool {
+    re := regexp.MustCompile("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+    return re.MatchString(input)
+}

@@ -77,6 +77,8 @@ type Filterable interface {
     SetMatched(permissions []string) interface{}
     BuildACLReference() string
     BuildACLEntry(reference string) ACLEntry
+    BuildACLInheritation() bool
+    BuildACLParent() string
 }
 
 // Takes any interface{} and attempts to convert it to []Filterable
@@ -96,21 +98,28 @@ func get_filterable (items interface{}) []Filterable {
 }
 
 // Get ACL entry from cache. If not available, build new (and set in cache)
-func GetACLEntry(reference string, item Filterable) ACLEntry {
+// If the type changes in inheritation, the BuildACLEntry before change should know how to build the next types!
+func GetACLEntry(reference string, item Filterable, inheritation bool) ACLEntry {
+    revel.TRACE.Printf("GetACLEntry() %+v", reference)
     entry := GetEntry(reference)
 
-    if len(entry.ObjReference)==0 {
+    if len(entry.ObjReference) == 0 {
         // Wasn't found from cache, build new!
         entry = item.BuildACLEntry(reference)
         // Save to cache
         SetEntry(entry)
     }
 
+    if inheritation && len(entry.Parent) > 0 {
+        parent_entry := GetACLEntry(entry.Parent, item, inheritation)
+        entry.ACLs = append(entry.ACLs, parent_entry.ACLs...)
+    }
+
     return entry;
 }
 
 // Filters items based on user's roles. Returns those that match any of the listed permissions.
-func Filter(c map[string]interface {}, permissions []string, i interface{}) []Filterable {
+func Filter(c map[string]interface {}, permissions []string, i interface{}, inheritation bool) []Filterable {
     revel.TRACE.Printf("Filter(): %s : %+v", permissions, i)
     result := []Filterable{}
 
@@ -126,8 +135,7 @@ func Filter(c map[string]interface {}, permissions []string, i interface{}) []Fi
     // Compare all items against all ACLs, add matches to result
     for _, item := range items {
         ref := item.BuildACLReference()
-        //aclentry := item.GetACLEntry(ref)
-        aclentry := GetACLEntry(ref, item)
+        aclentry := GetACLEntry(ref, item, inheritation)
         matched := []string{}
         for _, acl := range aclentry.ACLs {
             if StringInSlice(acl.Permission, permissions) && StringInSlice(acl.Principal, roles) {
