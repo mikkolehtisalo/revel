@@ -38,12 +38,12 @@ The details can be accessed from struct
 
 ```go
 type User_details struct {
-    username string
-    visiblename string
-    photo []byte
-    groups []string
-    roles []string
+    Username string
+    Visiblename string
+    Photo []byte
+    Groups []string
+    Roles []string
 }
 ```
 
-that will be saved into *c.Args["user_details"]*.
+that will be saved into *c.Args["user_details"]*. Type assertion .(ldapuserdetails.User_details) is usually required.
