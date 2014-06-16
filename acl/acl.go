@@ -82,7 +82,7 @@ type Filterable interface {
 }
 
 // Takes any interface{} and attempts to convert it to []Filterable
-func get_filterable (items interface{}) []Filterable {
+func Get_filterable (items interface{}) []Filterable {
     slice := reflect.ValueOf(items)
     if slice.Kind() != reflect.Slice {
         // Panic?
@@ -124,7 +124,7 @@ func Filter(c map[string]interface {}, permissions []string, i interface{}, inhe
     result := []Filterable{}
 
     // Get the items
-    items := get_filterable(i)
+    items := Get_filterable(i)
     revel.TRACE.Printf("Items: %+v", items)
 
     // Get roles for the user
@@ -152,9 +152,3 @@ func Filter(c map[string]interface {}, permissions []string, i interface{}, inhe
     revel.TRACE.Printf("Filter returning: %+v", result)
     return result
 }
-
-/*
-
-
-
-*/
