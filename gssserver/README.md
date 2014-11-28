@@ -35,7 +35,7 @@ import (
         gssserver.GSSServerFilter,     // GSSAPI authentication
     }
 ```
-The authenticated user can will be saved c.Session["username"]. 
+The authenticated user will be saved to c.Session["username"]. 
 
 Notes
 -----
